@@ -1,27 +1,46 @@
 import cv2
 import face_recognition as fr
 import os
+import time
+
+cap = cv2.VideoCapture(0)
 
 preSetImages = []
 compareImages = []
-preSetFolder = os.listdir('./preset')
+presetFolder = os.listdir('./preset')
 compareFolder = os.listdir('./compare')
 
-for item in preSetFolder:
-    preSetImages.append(item)
+compareTime = time.time()
+
+def VerificaImagemPasta():
+    presetFolder = os.listdir('./preset')
+    # if os.path.exists(presetFolder) == False:
+    #     return False
+    for item in presetFolder:
+        preSetImages.append(item)
 
 for image in compareFolder:
     compareImages.append(image)
 
-for item in preSetImages:
+VerificaImagemPasta()
+
+while (cap.isOpened()):
+    ret, frame = cap.read()
+    
+    if not ret:
+        break
+    
+    now = time.time()
+    if now - compareTime > 300:
+        VerificaImagemPasta()
+        
     for image in compareImages:
         pathImage = "./compare/" + str(image)
-        pathPreset = "./preset/" + str(item)
         
         compareImage = fr.load_image_file(pathImage)
         compareImage = cv2.cvtColor(compareImage, cv2.COLOR_BGR2RGB)
         
-        presetImage = fr.load_image_file(pathPreset)
+        presetImage = fr.load_image_file(frame)
         presetImage = cv2.cvtColor(presetImage, cv2.COLOR_BGR2RGB)
     
         faceLoc = fr.face_locations(compareImage)[0]
@@ -40,3 +59,5 @@ for item in preSetImages:
     cv2.waitKey(0)
     
 cv2.destroyAllWindows()
+
+
